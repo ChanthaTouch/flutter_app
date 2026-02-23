@@ -1,67 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/app_provider.dart';
+import '../widgets/performance_card.dart';
+import '../widgets/custom_button.dart';
 
 class ReportScreen extends StatelessWidget {
   const ReportScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<AppProvider>(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Sale Daily Reported')),
+      appBar: AppBar(title: const Text('Daily Sales Report')),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Customer Name:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Customer Name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text('Price', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
-            const Divider(thickness: 1, color: Colors.black),
+            const Divider(thickness: 1.5),
             const SizedBox(height: 16),
-            _buildRow('Customer A', '\$30'),
-            const SizedBox(height: 24),
-            _buildRow('Customer B', '\$30'),
-            const SizedBox(height: 24),
-            const Divider(thickness: 1, color: Colors.black),
-            const SizedBox(height: 8),
-            _buildRow('Total:', '\$60', isBold: true),
-            
-            const Spacer(),
-            
-            // Targets Row
+
+            ...provider.sales.map((sale) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(sale.customerName, style: const TextStyle(fontSize: 15)),
+                      Text('\$${sale.totalPrice.toStringAsFixed(2)}',
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                )),
+
+            const Divider(thickness: 1.5),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildTargetBox('Daily Target:', '2,000 \$'),
-                _buildTargetBox('Weekly Target:', '18,000 \$'),
-                _buildTargetBox('Monthly Target:', '90,000 \$'),
+                const Text('Total:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  '\$${provider.todayTotal.toStringAsFixed(2)}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
 
-            // Performance Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF7F27),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Column(
-                children: [
-                  Text('Your Performance: 75%', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.trending_up, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text('Near Target', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
-                  ),
-                ],
+            const Spacer(),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildTargetBox(context, 'Daily Target', '2,000 \$'),
+                _buildTargetBox(context, 'Weekly Target', '14,000 \$'),
+                _buildTargetBox(context, 'Monthly Target', '60,000 \$'),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            PerformanceCard(
+              percentage: provider.performancePercent,
+              statusText: '',
+            ),
+
+            const SizedBox(height: 32),
+
+            Center(
+              child: CustomButton(
+                label: 'Back to Dashboard',
+                color: Colors.grey.shade700,
+                onPressed: () => Navigator.pop(context),
               ),
             ),
           ],
@@ -70,27 +86,26 @@ class ReportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String amount, {bool isBold = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(fontSize: 16, fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
-        Text(amount, style: TextStyle(fontSize: 16, fontWeight: isBold ? FontWeight.bold : FontWeight.bold)),
-      ],
-    );
-  }
-
-  Widget _buildTargetBox(String label, String value) {
+  Widget _buildTargetBox(BuildContext context, String label, String value) {
+    final width = MediaQuery.of(context).size.width * 0.28;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
         Container(
-          width: 90,
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(border: Border.all(color: Colors.grey), color: Colors.white),
-          child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontSize: 12)),
+          width: width,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade400),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          ),
         ),
       ],
     );

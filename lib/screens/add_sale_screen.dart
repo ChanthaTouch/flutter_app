@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/app_provider.dart';
+import '../models/sale.dart';
+import '../widgets/custom_button.dart';
 import 'choose_product_screen.dart';
 
 class AddSaleScreen extends StatefulWidget {
@@ -11,83 +16,84 @@ class AddSaleScreen extends StatefulWidget {
 class _AddSaleScreenState extends State<AddSaleScreen> {
   final _customerController = TextEditingController();
   final _totalPriceController = TextEditingController();
-  String _selectedDate = "Select Date:";
+  DateTime? _selectedDate;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Sale'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Mock Dropdown for Date
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400), borderRadius: BorderRadius.circular(4), color: Colors.white),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: _selectedDate,
-                    items: [_selectedDate].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                    onChanged: (v) {},
-                  ),
-                ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              title: Text(
+                _selectedDate == null
+                    ? 'Select Date'
+                    : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
               ),
-              const SizedBox(height: 20),
-              
-              const Text('Customer Name:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _customerController,
-                decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true, contentPadding: EdgeInsets.all(12), fillColor: Colors.white, filled: true),
+              trailing: const Icon(Icons.calendar_today),
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                );
+                if (date != null) setState(() => _selectedDate = date);
+              },
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _customerController,
+              decoration: const InputDecoration(
+                labelText: 'Customer Name',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 30),
-              
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4A89DC), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ChooseProductScreen()));
-                  },
-                  child: const Text('Select Product', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _totalPriceController,
+              decoration: const InputDecoration(
+                labelText: 'Total Price (\$)',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 30),
-
-              const Text('Total Price:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _totalPriceController,
-                decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true, contentPadding: EdgeInsets.all(12), fillColor: Colors.white, filled: true),
-                keyboardType: TextInputType.number,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: CustomButton(
+                label: 'Select Product',
+                color: const Color(0xFF4A89DC),
+                onPressed: () => Navigator.pushNamed(context, '/choose-product'),
               ),
-              const SizedBox(height: 40),
-
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: 150,
-                  height: 45,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF5A9B5C), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Submit', style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                ),
+            ),
+            const SizedBox(height: 40),
+            Center(
+              child: CustomButton(
+                label: 'Submit Sale',
+                color: const Color(0xFF5A9B5C),
+                onPressed: () {
+                  if (_customerController.text.isNotEmpty && _totalPriceController.text.isNotEmpty) {
+                    final price = double.tryParse(_totalPriceController.text) ?? 0;
+                    final provider = Provider.of<AppProvider>(context, listen: false);
+                    provider.addSale(Sale(
+                      customerName: _customerController.text,
+                      totalPrice: price,
+                      date: _selectedDate ?? DateTime.now(),
+                    ));
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Sale added successfully')),
+                    );
+                  }
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

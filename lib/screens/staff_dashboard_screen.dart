@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/app_provider.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/performance_card.dart';
 import 'add_sale_screen.dart';
 import 'report_screen.dart';
 import 'app_drawer.dart';
@@ -8,68 +13,60 @@ class StaffDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<AppProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Seller Dashboard')),
-      drawer: const AppDrawer(), // Integrated Side Menu
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const Text('Welcome, Punleu!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 30),
-            _buildMenuButton(context, 'Add Sale', const Color(0xFF5A9B5C), () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AddSaleScreen()));
-            }),
-            const SizedBox(height: 16),
-            _buildMenuButton(context, 'View Daily Report', const Color(0xFF3333FF), () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportScreen()));
-            }),
-            const SizedBox(height: 16),
-            _buildMenuButton(context, 'View Monthly Report', const Color(0xFFFF7F27), () {}),
-            const SizedBox(height: 30),
-            _buildPerformanceCard(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPerformanceCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFF7F27), 
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Column(
-        children: [
-          Text('Your Performance: 75%', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      drawer: const AppDrawer(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.trending_up, color: Colors.white, size: 24),
-              SizedBox(width: 8),
-              Text('Near Target', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(
+                'Welcome back, ${provider.currentUser?.name ?? "Punleu"}!',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Let's check your sales performance today",
+                style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
+              ),
+              const SizedBox(height: 32),
+
+              CustomButton(
+                label: 'Add New Sale',
+                color: const Color(0xFF5A9B5C),
+                onPressed: () => Navigator.pushNamed(context, '/add-sale'),
+              ),
+              const SizedBox(height: 16),
+
+              CustomButton(
+                label: 'View Daily Report',
+                color: const Color(0xFF3333FF),
+                onPressed: () => Navigator.pushNamed(context, '/report'),
+              ),
+              const SizedBox(height: 16),
+
+              CustomButton(
+                label: 'View Monthly Report',
+                color: const Color(0xFFFF7F27),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Monthly report coming soon')),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 40),
+              PerformanceCard(
+                percentage: provider.performancePercent,
+                statusText: '',
+              ),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuButton(BuildContext context, String title, Color color, VoidCallback onTap) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
-        onPressed: onTap,
-        child: Text(title, style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }

@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/app_provider.dart';
+import '../widgets/custom_button.dart';
 import 'set_target_screen.dart';
 import 'app_drawer.dart';
 
@@ -7,9 +11,12 @@ class ManagerDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<AppProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Manager Dashboard')),
-      drawer: const AppDrawer(), // Integrated Side Menu
+      drawer: const AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -17,28 +24,34 @@ class ManagerDashboardScreen extends StatelessWidget {
           children: [
             Center(
               child: SizedBox(
-                width: 250,
-                height: 45,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A89DC), 
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))
-                  ),
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SetTargetScreen())),
-                  child: const Text('Set Staff Target', style: TextStyle(fontSize: 18, color: Colors.white)),
+                width: screenWidth * 0.75,
+                height: 52,
+                child: CustomButton(
+                  label: 'Set Staff Target',
+                  color: const Color(0xFF4A89DC),
+                  onPressed: () => Navigator.pushNamed(context, '/set-target'),
                 ),
               ),
             ),
-            const SizedBox(height: 30),
-            const Row(
+            const SizedBox(height: 32),
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Daily Sales Today:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text('\$500', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Daily Sales Today:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '\$${provider.todayTotal.toStringAsFixed(0)}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
-            const SizedBox(height: 30),
-            const Text('Staff Performance:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 32),
+            const Text(
+              'Staff Performance:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             _buildStaffRow('John:', '90%', 'Near Target', Colors.green, Colors.black),
             const Divider(),
@@ -53,13 +66,19 @@ class ManagerDashboardScreen extends StatelessWidget {
 
   Widget _buildStaffRow(String name, String percent, String status, Color pctColor, Color statusColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Text(percent, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pctColor)),
-          Text(status, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: statusColor)),
+          Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(
+            percent,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pctColor),
+          ),
+          Text(
+            status,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: statusColor),
+          ),
         ],
       ),
     );
