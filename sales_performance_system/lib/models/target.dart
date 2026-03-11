@@ -1,24 +1,24 @@
-class Sale {
+class Target {
   final int? id;
   final int userId;
-  final double amount;
-  final String date;
+  final double targetAmount;
+  final String period;
   final String? description;
 
-  Sale({
+  Target({
     this.id,
     required this.userId,
-    required this.amount,
-    required this.date,
+    required this.targetAmount,
+    required this.period,
     this.description,
   });
 
-  factory Sale.fromJson(Map<String, dynamic> json) {
-    return Sale(
+  factory Target.fromJson(Map<String, dynamic> json) {
+    return Target(
       id: json['id'],
       userId: json['user_id'],
-      amount: double.parse(json['amount'].toString()),
-      date: json['date'],
+      targetAmount: double.parse(json['target_amount'].toString()),
+      period: json['period'],
       description: json['description'],
     );
   }
@@ -27,8 +27,8 @@ class Sale {
     return {
       if (id != null) 'id': id,
       'user_id': userId,
-      'amount': amount,
-      'date': date,
+      'target_amount': targetAmount,
+      'period': period,
       if (description != null) 'description': description,
     };
   }
